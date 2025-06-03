@@ -96,49 +96,52 @@
         }
         .breakfast-options-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
-            gap: 1rem; 
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Adjusted for button + qty */
+            gap: 0.75rem;
         }
-        .breakfast-option {
+        .breakfast-option-button {
             display: flex;
+            flex-direction: column; /* Stack button and quantity */
             align-items: center;
-            padding: 0.625rem;
-            background-color: #f9fafb;
+            justify-content: center;
+            padding: 0.75rem 0.5rem;
+            background-color: #f9fafb; /* Default light gray */
+            border: 2px solid #e5e7eb; /* Default border */
             border-radius: 0.5rem; 
-            border: 1px solid #e5e7eb;
-            transition: background-color 0.2s;
-        }
-        .breakfast-option:hover { background-color: #f3f4f6; }
-        .breakfast-option input[type="checkbox"] {
-            width: 1.25rem; height: 1.25rem; 
-            accent-color: #2563eb;
-            margin-right: 0.625rem;
-            border-radius: 0.25rem;
-        }
-        .breakfast-option label {
-            font-weight: 500;
-            color: #1f2937; 
-            margin-right: 0.5rem;
             cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            text-align: center;
         }
-        .breakfast-option input[type="number"] {
+        .breakfast-option-button.selected {
+            background-color: #dbeafe; /* Light blue for selected */
+            border-color: #3b82f6; /* Blue border for selected */
+            color: #1e40af; /* Darker blue text */
+            box-shadow: 0 2px 4px rgba(59,130,246,0.2);
+        }
+        .breakfast-option-button:hover:not(.selected) {
+            background-color: #f3f4f6;
+            border-color: #9ca3af;
+        }
+        .bf-type-label {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+        .bf-qty-input {
             width: 4rem; 
-            padding: 0.375rem 0.5rem;
+            padding: 0.25rem;
             border: 1px solid #cbd5e1;
-            border-radius: 0.375rem;
+            border-radius: 0.25rem;
             text-align: center;
             font-size: 0.9rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            margin-top: 0.25rem;
+            appearance: textfield; /* Try to force numeric, but inputmode is better */
+            -moz-appearance: textfield; /* Firefox */
         }
-        .breakfast-option input[type="number"]:focus {
-            border-color: #2563eb; 
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25); 
-            outline: none; 
-        }
-        .breakfast-option input[type="number"]:disabled {
+        .bf-qty-input:disabled {
             background-color: #e5e7eb;
             cursor: not-allowed;
-            opacity: 0.7;
+            opacity: 0.6;
         }
 
 
@@ -307,7 +310,8 @@
                     <label for="ibelsaTotalInput" id="ibelsaLabel" class="block text-sm font-semibold text-blue-800 mb-1.5">Ibelsa Gesamt (Frühstück):</label>
                     <input type="number" id="ibelsaTotalInput" class="w-full p-3 border border-blue-400 rounded-md shadow-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 text-lg" placeholder="Gesamtzahl von Ibelsa">
                 </div>
-                <div id="roomOrdersContainer" class="max-h-[70vh] overflow-y-auto pr-2 p-1 space-y-4"></div> <button id="processOrdersButton" class="w-full action-button primary-button">
+                <div id="roomOrdersContainer" class="max-h-[70vh] overflow-y-auto pr-2 p-1 space-y-4"></div> 
+                <button id="processOrdersButton" class="w-full action-button primary-button">
                     Bestellungen verarbeiten & Anpassen
                 </button>
                 <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -369,7 +373,7 @@
         let currentLanguage = 'de';
         let allProcessedOrders = []; 
         let ibelsaTotalFromInput = null;
-        const LOCAL_STORAGE_KEY = 'breakfastCounterSessionData_v4'; 
+        const LOCAL_STORAGE_KEY = 'breakfastCounterSessionData_v8_checkboxInput'; // New key for this input format
 
 
         const breakfastDefinitions = {
@@ -403,7 +407,7 @@
                 summarySectionTitle: "Produktionsübersicht", ibelsaLabel: "Ibelsa Gesamt (Frühstück):", ibelsaPlaceholder: "Gesamtzahl von Ibelsa", 
                 compareIbelsaButton: "Mit Ibelsa vergleichen", printProductionListButton: "Produktionsliste drucken", 
                 clearAllDataButton: "Alle Daten zurücksetzen & Speicher leeren",
-                roomLabelPrefix: "Zimmer ", roomInputPlaceholder: "H,S,G,V,E,K...",
+                roomLabelPrefix: "Zimmer ", 
                 herzName: "Herz", suessName: "Süss", gruenName: "Grün", veganName: "Vegan", extraName: "Extra", kaesetellerName: "Käseteller",
                 Wurst: "Wurst", Käse: "Käse", Gemüse: "Gemüse", Butter: "Butter", Marmelade: "Marmelade", 
                 'Veganer Aufschnitt': "Veganer Aufschnitt", 'Veganer Käse': "Veganer Käse", Margarine: "Margarine",
@@ -451,7 +455,7 @@
                 summarySectionTitle: "Production Summary", ibelsaLabel: "Ibelsa Total (Breakfasts):", ibelsaPlaceholder: "Total from Ibelsa", 
                 compareIbelsaButton: "Compare with Ibelsa", printProductionListButton: "Print Production List", 
                 clearAllDataButton: "Reset All Data & Storage",
-                roomLabelPrefix: "Room ", roomInputPlaceholder: "H,S,G,V,E,K...",
+                roomLabelPrefix: "Room ", 
                 herzName: "Hearty", suessName: "Sweet", gruenName: "Green (Veg)", veganName: "Vegan", extraName: "Extra", kaesetellerName: "Cheese Plate",
                 Wurst: "Sausage", Käse: "Cheese", Gemüse: "Vegetables", Butter: "Butter", Marmelade: "Jam",
                 'Veganer Aufschnitt': "Vegan Cold Cuts", 'Veganer Käse': "Vegan Cheese", Margarine: "Margarine",
@@ -481,7 +485,7 @@
             }
         };
         
-        const roomNumbers = [
+        const roomNumbers = [ 
             ...Array.from({ length: 7 }, (_, i) => 10 + i), ...Array.from({ length: 7 }, (_, i) => 20 + i),
             ...Array.from({ length: 7 }, (_, i) => 30 + i), ...Array.from({ length: 7 }, (_, i) => 40 + i),
             50, 51, 52
@@ -582,10 +586,10 @@
         }
 
         function generateRoomInputFields() {
-            DOMElements.roomOrdersContainer.innerHTML = ''; // Clear previous inputs
-            roomNumbers.forEach(roomNum => {
+            DOMElements.roomOrdersContainer.innerHTML = ''; 
+            roomNumbers.forEach((roomNum, index) => {
                 const roomEntryDiv = document.createElement('div');
-                roomEntryDiv.className = 'room-order-entry';
+                roomEntryDiv.className = 'room-order-entry'; 
                 roomEntryDiv.id = `room-entry-${roomNum}`;
 
                 let headerHTML = `
@@ -599,9 +603,11 @@
                     const bfDef = breakfastDefinitions[bfCode];
                     optionsHTML += `
                         <div class="breakfast-option">
-                            <input type="checkbox" id="room-${roomNum}-chk-${bfCode}" data-room="${roomNum}" data-type="${bfCode}">
-                            <label for="room-${roomNum}-chk-${bfCode}">${bfCode}</label>
-                            <input type="number" id="room-${roomNum}-qty-${bfCode}" min="1" max="10" value="1" class="ml-auto" disabled>
+                            <input type="checkbox" id="room-${roomNum}-chk-${bfCode}" data-room="${roomNum}" data-type="${bfCode}" class="form-checkbox h-5 w-5 text-blue-600 transition duration-150 ease-in-out rounded">
+                            <label for="room-${roomNum}-chk-${bfCode}" class="ml-2 text-sm text-gray-700">${bfCode}</label>
+                            <input type="number" id="room-${roomNum}-qty-${bfCode}" min="1" max="10" value="1" 
+                                   class="bf-qty-input form-input ml-auto rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" 
+                                   inputmode="numeric" pattern="[0-9]*" disabled>
                         </div>
                     `;
                 });
@@ -614,7 +620,7 @@
                     const qtyInput = roomEntryDiv.querySelector(`#room-${roomNum}-qty-${bfCode}`);
                     chk.addEventListener('change', () => {
                         qtyInput.disabled = !chk.checked;
-                        if (chk.checked && qtyInput.value < 1) {
+                        if (chk.checked && (qtyInput.value < 1 || qtyInput.value === "")) {
                             qtyInput.value = 1;
                         } 
                     });
@@ -983,11 +989,7 @@
         DOMElements.clearAllDataButton.addEventListener('click', () => {
             allProcessedOrders = [];
             ibelsaTotalFromInput = null;
-            DOMElements.roomOrdersContainer.querySelectorAll('.room-order-entry').forEach(entry => {
-                entry.querySelectorAll('input[type="checkbox"]').forEach(chk => chk.checked = false);
-                entry.querySelectorAll('input[type="number"]').forEach(num => { num.value = 1; num.disabled = true; });
-                entry.querySelector('.room-time-input').value = '';
-            });
+            DOMElements.roomOrdersContainer.querySelectorAll('.room-order-text-input').forEach(input => input.value = ''); 
             DOMElements.ibelsaTotalInput.value = '';
             localStorage.removeItem(LOCAL_STORAGE_KEY); 
             renderCustomizationView();
@@ -998,28 +1000,23 @@
         });
 
         DOMElements.saveSessionButton.addEventListener('click', () => {
-            const roomOrderData = [];
-            DOMElements.roomOrdersContainer.querySelectorAll('.room-order-entry').forEach(entry => {
-                const roomNum = entry.id.split('-')[2];
-                const timeInput = entry.querySelector(`#room-${roomNum}-time`);
-                const selections = {};
-                breakfastOrderForInput.forEach(bfCode => {
-                    const chk = entry.querySelector(`#room-${roomNum}-chk-${bfCode}`);
-                    const qtyInput = entry.querySelector(`#room-${roomNum}-qty-${bfCode}`);
-                    selections[bfCode] = {
-                        checked: chk.checked,
-                        qty: chk.checked ? parseInt(qtyInput.value) || 1 : 0
-                    };
-                });
-                roomOrderData.push({
-                    roomNumber: roomNum, 
-                    timeValue: timeInput.value,
-                    selections: selections
-                });
+            const roomInputsData = [];
+            DOMElements.roomOrdersContainer.querySelectorAll('.room-order-entry-row').forEach(row => {
+                 const roomNumLabel = row.querySelector('.room-number-label').textContent;
+                 const roomNumMatch = roomNumLabel.match(/\d+/);
+                 if (roomNumMatch) {
+                    const roomNum = roomNumMatch[0];
+                    const orderTextInput = row.querySelector(`#room-${roomNum}-order-text`);
+                    roomInputsData.push({
+                        roomNumber: roomNum,
+                        orderTextValue: orderTextInput.value
+                    });
+                 }
             });
+
             const sessionData = {
                 ibelsaTotal: DOMElements.ibelsaTotalInput.value,
-                roomInputsWithTimeAndSelections: roomOrderData, 
+                roomTextInputs: roomInputsData, 
                 processedOrders: allProcessedOrders, 
                 lang: currentLanguage
             };
@@ -1040,19 +1037,12 @@
                     DOMElements.ibelsaTotalInput.value = savedData.ibelsaTotal || '';
                     ibelsaTotalFromInput = savedData.ibelsaTotal ? parseInt(savedData.ibelsaTotal) : null;
                     
-                    if (savedData.roomInputsWithTimeAndSelections) {
-                        savedData.roomInputsWithTimeAndSelections.forEach(roomData => {
-                            const timeInput = document.getElementById(`room-${roomData.roomNumber}-time`);
-                            if (timeInput) timeInput.value = roomData.timeValue || '';
-                            Object.keys(roomData.selections).forEach(bfCode => {
-                                const chk = document.getElementById(`room-${roomData.roomNumber}-chk-${bfCode}`);
-                                const qtyInput = document.getElementById(`room-${roomData.roomNumber}-qty-${bfCode}`);
-                                if (chk && qtyInput) {
-                                    chk.checked = roomData.selections[bfCode].checked;
-                                    qtyInput.value = roomData.selections[bfCode].qty || 1;
-                                    qtyInput.disabled = !chk.checked;
-                                }
-                            });
+                    if (savedData.roomTextInputs) { 
+                        savedData.roomTextInputs.forEach(roomData => {
+                            const orderTextInput = document.getElementById(`room-${roomData.roomNumber}-order-text`);
+                            if (orderTextInput) {
+                                orderTextInput.value = roomData.orderTextValue || '';
+                            }
                         });
                     }
 
@@ -1264,4 +1254,4 @@
         };
     </script>
 </body>
-</html>
+</ht
